@@ -1,30 +1,42 @@
 $(document).ready(() => {
 
-  fetch("https://paaextract.com/getCouponCodes", {
+  let backendUrl = "http://localhost:3000"
+
+  fetch("http://localhost:3000/api/v1/cookies", {
     method: "GET"
   }).then(res => res.json()).then(resp => {
+    let data = resp.data;
     let rows = "";
-    resp.forEach(element => {
+    data.forEach((element, index) => {
       rows += `<li class="list-group-item d-flex">
-            <div class="column column-id">${element.id}</div>
-            <div class="column column-description">${element.description}</div>
-            <div class="column column-code">${element.code}</div>
-            <button class="use-btn btn btn-danger" data-code="${element.code}">Click Here For Use</button>
+            <div class="column column-id">${index + 1}</div>
+            <div class="column column-name"><img src='${backendUrl + "/" +element.app_icon}' height="32" width="32" /> ${element.app_name}</div>
+            <button class="use-btn btn btn-success p-1" data-appid="${element.cookie_id}">Access Now</button>
           </li>`
     });
 
-    $("#coupon-list").html(rows);
+    $("#app-list").html(rows);
   });
   $(document).on("click",".use-btn", (e) => {
-    let code = e.target.getAttribute("data-code");
-    console.log(code);
+    let cid = $(e.target).attr("data-appid");
+    e.target.innerText = "Please Wait...";
 
-    chrome.tabs.query({ currentWindow: true, active: true }, function (tabs) {
-      var activeTab = tabs[0];
-      chrome.tabs.sendMessage(activeTab.id, {
-        msg: "apply-coupon",
-        code: code,
+    fetch(`${backendUrl}/api/v1/cookies/${cid}`).then(res => res.json()).then(resp => {
+      let data = resp.data;
+      let cookies = JSON.parse(data.app_cookies);
+      cookies.forEach((cookie, index) => {
+        cookie.url = data.app_url;
+        delete cookie.hostOnly;
+        delete cookie.session;
+
+        chrome.cookies.set(cookie, () => {
+          if(cookies.length-1 == index)
+          window.open(data.app_url, "_blank");
+        })
       });
-    });
+    }).finally(() => {
+      e.target.innerText = "Access Now";
+    })
+
   });
 });
