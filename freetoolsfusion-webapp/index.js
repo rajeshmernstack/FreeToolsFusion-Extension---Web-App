@@ -19,7 +19,7 @@ app.use("/api/v1/cookies", cookiesRouter);
 app.get("/", (req, res) => {
     res.render('index');
 })
-app.get("/admin", (req, res) => {
+app.get("/iamadminrajeshkumar", (req, res) => {
     res.render('admin');
 })
 app.get("*", (req, res) => {

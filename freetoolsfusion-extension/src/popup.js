@@ -1,6 +1,6 @@
 $(document).ready(() => {
 
-  let backendUrl = "http://localhost:3000"
+  const backendUrl = "http://localhost:3000"
 
   fetch("http://localhost:3000/api/v1/cookies", {
     method: "GET"
